@@ -38,7 +38,7 @@ public class PersonBuilder {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		Session session = sf.openSession();
 		StudentGroupDAO dao = new StudentGroupDAO(session);
-		StudentGroup studentGroup = dao.read("StudentGroup", "group_ID", servicePerson.getGroupID());
+		StudentGroup studentGroup = dao.read("StudentGroup", "group_ID", Integer.toString(servicePerson.getGroupID()));
 		session.close();
 		person.setGroupID(studentGroup);
 		person.setFirstname(servicePerson.getFirstname());

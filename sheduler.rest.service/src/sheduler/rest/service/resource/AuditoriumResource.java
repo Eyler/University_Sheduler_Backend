@@ -33,7 +33,7 @@ public class AuditoriumResource {
 	// Return the list of todos for applications
 	@GET
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public List<ServiceAuditorium> getPersons() {
+	public List<ServiceAuditorium> getAuditoriums() {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		org.hibernate.Session session = sf.openSession();
 		try {

@@ -1,4 +1,4 @@
-package sheduler.model.bean;
+ package sheduler.model.bean;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

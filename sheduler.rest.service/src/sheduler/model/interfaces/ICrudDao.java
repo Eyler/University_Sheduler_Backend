@@ -12,6 +12,6 @@ public interface ICrudDao<T> {
 
 	public List<T> readAll();
 
-	T read(String table, String parameter, Integer id);
+	T read(String table, String parameter, String value);
 
 }

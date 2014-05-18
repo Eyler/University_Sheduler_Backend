@@ -31,6 +31,7 @@ public class Period {
 	@Column(name = "period_number")
 	private int periodNumber;
 	
+	// Types = period, event
 	@Column(name = "period_type")
 	private String periodType;
 	

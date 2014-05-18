@@ -22,5 +22,12 @@ public class PeriodDAO extends BaseCrudDAO<Period> implements IPeriodDao {
 	protected Class<Period> getEntityClass() {
 		return Period.class;
 	}
+	
+	public List<Period> readGroupScheduler(String groupID) {
+		return session.createQuery("From Period where group_ID =" + "'" + groupID + "'").list();
+	}
 
+	public List<Period> readPeriodsByDay(String day) {
+		return session.createQuery("From Period where day =" + "'" + day + "'").list();
+	}
 }

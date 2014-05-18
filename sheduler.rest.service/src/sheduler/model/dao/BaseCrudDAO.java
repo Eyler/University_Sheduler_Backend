@@ -32,8 +32,8 @@ public abstract class BaseCrudDAO<T> implements ICrudDao<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T read(String table, String parameter, Integer id) {
-		Query query = session.createQuery("from " + table + " where " + parameter + "='" + id + "'");
+	public T read(String table, String parameter, String value) {
+		Query query = session.createQuery("from " + table + " where " + parameter + "='" + value + "'");
 		List<T> list = query.list();
 		if (list != null && !list.isEmpty()) {
 			return (T) list.get(0);
@@ -41,7 +41,7 @@ public abstract class BaseCrudDAO<T> implements ICrudDao<T> {
 			return null;
 		}
 	}
-
+	
 	@Override
 	public void delete(Integer id) {
 		session.delete(session.get(getEntityClass(), id));

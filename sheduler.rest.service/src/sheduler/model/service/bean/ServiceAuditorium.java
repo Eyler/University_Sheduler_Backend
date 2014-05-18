@@ -42,4 +42,43 @@ public class ServiceAuditorium {
 	}
 
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((auditoriumID == null) ? 0 : auditoriumID.hashCode());
+		result = prime * result + ((auditoriumLocation == null) ? 0 : auditoriumLocation.hashCode());
+		result = prime * result + ((auditoriumNumber == null) ? 0 : auditoriumNumber.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ServiceAuditorium other = (ServiceAuditorium) obj;
+		if (auditoriumID == null) {
+			if (other.auditoriumID != null)
+				return false;
+		} else if (!auditoriumID.equals(other.auditoriumID))
+			return false;
+		if (auditoriumLocation == null) {
+			if (other.auditoriumLocation != null)
+				return false;
+		} else if (!auditoriumLocation.equals(other.auditoriumLocation))
+			return false;
+		if (auditoriumNumber == null) {
+			if (other.auditoriumNumber != null)
+				return false;
+		} else if (!auditoriumNumber.equals(other.auditoriumNumber))
+			return false;
+		return true;
+	}
+
+
 }
