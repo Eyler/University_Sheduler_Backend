@@ -52,9 +52,4 @@ public class AuditoriumResource {
 		}
 	}
 	
-	@GET
-	@Produces(MediaType.TEXT_PLAIN)
-	public String getTodoHTML() {
-		return "OLOLOLO";
-	}
 }

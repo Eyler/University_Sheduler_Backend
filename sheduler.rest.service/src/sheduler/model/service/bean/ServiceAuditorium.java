@@ -46,7 +46,6 @@ public class ServiceAuditorium {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((auditoriumID == null) ? 0 : auditoriumID.hashCode());
 		result = prime * result + ((auditoriumLocation == null) ? 0 : auditoriumLocation.hashCode());
 		result = prime * result + ((auditoriumNumber == null) ? 0 : auditoriumNumber.hashCode());
 		return result;
@@ -62,11 +61,6 @@ public class ServiceAuditorium {
 		if (getClass() != obj.getClass())
 			return false;
 		ServiceAuditorium other = (ServiceAuditorium) obj;
-		if (auditoriumID == null) {
-			if (other.auditoriumID != null)
-				return false;
-		} else if (!auditoriumID.equals(other.auditoriumID))
-			return false;
 		if (auditoriumLocation == null) {
 			if (other.auditoriumLocation != null)
 				return false;
@@ -79,6 +73,5 @@ public class ServiceAuditorium {
 			return false;
 		return true;
 	}
-
-
+	
 }

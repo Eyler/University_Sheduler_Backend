@@ -46,4 +46,5 @@ public abstract class BaseCrudDAO<T> implements ICrudDao<T> {
 	public void delete(Integer id) {
 		session.delete(session.get(getEntityClass(), id));
 	}
-}
+	
+}	

@@ -16,7 +16,9 @@ public class ServiceAddEvent {
 	public String getDay() {
 		return day;
 	}
-
+	
+	private ServiceAuditorium auditorium; 
+	
 	public void setDay(String day) {
 		this.day = day;
 	}
@@ -45,5 +47,13 @@ public class ServiceAddEvent {
 
 	public void setEventDate(Date eventDate) {
 		this.eventDate = eventDate;
+	}
+
+	public ServiceAuditorium getAuditorium() {
+		return auditorium;
+	}
+
+	public void setAuditorium(ServiceAuditorium auditorium) {
+		this.auditorium = auditorium;
 	}
 }

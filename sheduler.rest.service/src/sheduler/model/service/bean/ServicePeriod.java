@@ -15,7 +15,6 @@ public class ServicePeriod {
 	
 	private String periodType;
 	
-	
 	private int groupID;
 
 	private ServiceAuditorium auditorium;

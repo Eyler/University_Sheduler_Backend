@@ -27,7 +27,15 @@ public class PeriodDAO extends BaseCrudDAO<Period> implements IPeriodDao {
 		return session.createQuery("From Period where group_ID =" + "'" + groupID + "'").list();
 	}
 
+	public List<Period> readGroupEvents(String groupID) {
+		return session.createQuery("From Period where group_ID =" + "'" + groupID + "' and period_type = 'event'").list();
+	}
+	
 	public List<Period> readPeriodsByDay(String day) {
 		return session.createQuery("From Period where day =" + "'" + day + "'").list();
 	}
+	
+	/*public boolean delete(String day) {
+		return session.createQuery("From Period where day =" + "'" + day + "'").list();
+	}*/
 }

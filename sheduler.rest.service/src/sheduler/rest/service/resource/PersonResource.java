@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -25,8 +26,6 @@ import javax.xml.bind.JAXBElement;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.google.common.collect.Multiset.Entry;
-
 import sheduler.model.HibernateUtil;
 import sheduler.model.bean.Auditorium;
 import sheduler.model.bean.Period;
@@ -36,8 +35,8 @@ import sheduler.model.dao.PeriodDAO;
 import sheduler.model.dao.PersonDAO;
 import sheduler.model.interfaces.IAuditoriumDao;
 import sheduler.model.interfaces.IPersonDao;
-import sheduler.model.service.bean.ServiceAddEvent;
 import sheduler.model.service.bean.ServiceAuditorium;
+import sheduler.model.service.bean.ServiceAuditoriumPeriod;
 import sheduler.model.service.bean.ServicePeriod;
 import sheduler.model.service.bean.ServicePerson;
 import sheduler.model.service.bean.builder.AuditoriumBuilder;
@@ -53,10 +52,6 @@ public class PersonResource {
 	UriInfo uriInfo;
 	@Context
 	Request request;
-	
-	//private String[] days = new String[] {"Пн", "Вт", "Ср", "Чт", "Пт"}; 
-	//private Integer[] periods = new Integer[] {new Integer(1), new Integer(2), new Integer(3), new Integer(4), new Integer(5)}; 
-	
 	// Return the list of service persons for applications
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -139,7 +134,7 @@ public class PersonResource {
 			if (groupPeriods != null && !groupPeriods.isEmpty()) {
 				for (Period period : groupPeriods) {
 					if (period.getPeriodType().equals("period")) {
-						periods.add(new PeriodBuilder(period).build());
+						periods.add(new PeriodBuilder().buildServicePeriod(period));
 					}
 				}
 			}
@@ -157,7 +152,7 @@ public class PersonResource {
 	@Path("/free_auditoriums/{day}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Map<Integer, Set<ServiceAuditorium>> getFreeAuditoriums(@PathParam("day") String day) {
+	public List <ServiceAuditoriumPeriod> getFreeAuditoriums(@PathParam("day") String day) {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		Session session = sf.openSession();
 		
@@ -169,7 +164,7 @@ public class PersonResource {
 			if (groupPeriods != null && !groupPeriods.isEmpty()) {
 				for (Period period : groupPeriods) {
 					if (period.getPeriodType().equals("period")) {
-						periods.add(new PeriodBuilder(period).build());
+						periods.add(new PeriodBuilder().buildServicePeriod(period));
 					}
 				}
 			}
@@ -199,16 +194,100 @@ public class PersonResource {
 				Set<ServiceAuditorium> actualAuditoriums = new HashSet<>(allAuditoriums);
 				Set<ServiceAuditorium> rezulSet = entry.getValue();
 				actualAuditoriums.removeAll(rezulSet);
-				entry.setValue(rezulSet);
+				entry.setValue(actualAuditoriums);
 			}
-			return periodAuditoriumsMap;
+			List<ServiceAuditoriumPeriod> auditoriumPeriods = new ArrayList<>();
+			for(Map.Entry<Integer, Set<ServiceAuditorium>> entry : periodAuditoriumsMap.entrySet()) {
+				auditoriumPeriods.add(new ServiceAuditoriumPeriod(entry.getKey(), entry.getValue()));
+			}
+			return auditoriumPeriods;
+		} catch (Exception e) {
+			e.printStackTrace(); 
+			return null;
+		}
+
+	}
+
+	@PUT
+	@Path("addEvent")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response addEvent(JAXBElement<ServicePeriod> p) {
+		Response res;
+		ServicePeriod servicePerson = p.getValue();
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		Period period = new PeriodBuilder().buildPeriod(servicePerson);
+		Session session = sf.openSession();
+		PeriodDAO dao = new PeriodDAO(session);
+		try {
+			dao.create(period);
+			session.close();
+			res = Response.created(uriInfo.getAbsolutePath()).build();
+		} catch (Exception e) {
+			res = Response.status(Status.BAD_REQUEST).build();
+		}
+		return res;
+
+	}
+
+	@GET
+	@Path("getEvents/{groupdID}")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public List<ServicePeriod> getEvents(@PathParam("groupdID") String groupdID) {
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		Session session = sf.openSession();
+		try {
+			PeriodDAO periodDAO = new PeriodDAO(session);
+			List<Period> groupPeriods = periodDAO.readGroupEvents(groupdID);
+			session.close();
+			List<ServicePeriod> periods = new ArrayList<>();
+			if (groupPeriods != null && !groupPeriods.isEmpty()) {
+				for (Period period : groupPeriods) {
+					periods.add(new PeriodBuilder().buildServicePeriod(period));
+				}
+			}
+			return periods;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 
 	}
+	
+	
+	@DELETE
+	@Path("deleteEvent")
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response deleteEvent(JAXBElement<ServicePeriod> p) {
+		Response res;
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		Period period = new PeriodBuilder().buildPeriod(p.getValue());
+		Session session = sf.openSession();
+		PeriodDAO dao = new PeriodDAO(session);
+		Period recievedEvent = new PeriodBuilder().buildPeriod(p.getValue());
+		try {
+			List<Period> events = dao.readGroupEvents(Integer.toString(period.getGroupID().getGroupID()));
+			Period toDelete = null;
+			for (Period event : events) {
+				//ServiceAuditorium auditorium = new AuditoriumBuilder(event.getAuditorium()).build();
+				if (event.getAuditorium().equals(recievedEvent.getAuditorium()) && event.getPeriodNumber() == recievedEvent.getPeriodNumber()) {
+					toDelete = event;
+				}
+			}
+			session.getTransaction().begin();
+			dao.delete(toDelete.getPeriodID());
+			session.getTransaction().commit();
+			session.close();
+			res = Response.created(uriInfo.getAbsolutePath()).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			res = Response.status(Status.BAD_REQUEST).build();
+		}
+		return res;
+
+	}
 
 	
-
+	
 }
