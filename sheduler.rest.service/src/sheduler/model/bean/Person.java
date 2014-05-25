@@ -17,7 +17,7 @@ import org.hibernate.annotations.CascadeType;
 public class Person {
 
 	@Id
-	@Column(name = "person_ID")
+	@Column(name = "person_ID", nullable = true, updatable = true)
 	private String personID;
 	
 	@Column(name = "role")

@@ -52,6 +52,7 @@ public class PersonResource {
 	UriInfo uriInfo;
 	@Context
 	Request request;
+
 	// Return the list of service persons for applications
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -80,8 +81,25 @@ public class PersonResource {
 		ServicePerson servicePerson = p.getValue();
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		Session session = sf.openSession();
-		Person person = new PersonBuilder().buildPerson(servicePerson);
 		PersonDAO dao = new PersonDAO(session);
+
+		if (servicePerson.getRole().equalsIgnoreCase("lecturer")) {
+			try {
+				Person lecturer = dao.read("Person", "lastname", servicePerson.getLastname());
+				//lecturer.setPersonID(servicePerson.getPersonID());
+				Person person = new PersonBuilder().buildPerson(servicePerson);
+				person.setGroupID(lecturer.getGroupID());
+				person.setLastname(lecturer.getLastname());
+				dao.create(person);
+				session.close();
+				res = Response.created(uriInfo.getAbsolutePath()).build();
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = Response.status(Status.BAD_REQUEST).build();
+			}
+			return res;
+		}
+		Person person = new PersonBuilder().buildPerson(servicePerson);
 		try {
 			dao.create(person);
 			session.close();
@@ -103,6 +121,7 @@ public class PersonResource {
 		Session session = sf.openSession();
 		PersonDAO dao = new PersonDAO(session);
 		try {
+			// TODO: lecturer
 			Person person = dao.read("Person", "person_ID", servicePerson.getPersonID());
 			session.close();
 			if (person != null && person.getPassword().equals(servicePerson.getPassword())) {
@@ -117,7 +136,6 @@ public class PersonResource {
 		}
 
 	}
-
 
 	@GET
 	@Path("{groupdID}")
@@ -145,19 +163,17 @@ public class PersonResource {
 		}
 
 	}
-	
-	
 
 	@GET
 	@Path("/free_auditoriums/{day}")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public List <ServiceAuditoriumPeriod> getFreeAuditoriums(@PathParam("day") String day) {
+	public List<ServiceAuditoriumPeriod> getFreeAuditoriums(@PathParam("day") String day) {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		Session session = sf.openSession();
-		
+
 		try {
-			// Get all periods by day 
+			// Get all periods by day
 			PeriodDAO periodDAO = new PeriodDAO(session);
 			List<Period> groupPeriods = periodDAO.readPeriodsByDay(day);
 			List<ServicePeriod> periods = new ArrayList<>();
@@ -172,15 +188,15 @@ public class PersonResource {
 			Set<ServiceAuditorium> allAuditoriums = new HashSet<>();
 			IAuditoriumDao dao = new AuditoriumDAO(session);
 			List<Auditorium> auditoriums = dao.readAll();
-			for(Auditorium auditorium : auditoriums) {
-				ServiceAuditorium serviceAuditorium = new AuditoriumBuilder(auditorium).build(); 
+			for (Auditorium auditorium : auditoriums) {
+				ServiceAuditorium serviceAuditorium = new AuditoriumBuilder(auditorium).build();
 				allAuditoriums.add(serviceAuditorium);
 			}
 			session.close();
 			// Get reserved auditoriums
 			Map<Integer, Set<ServiceAuditorium>> periodAuditoriumsMap = new HashMap<>();
-			for(ServicePeriod per : periods) {
-				if(periodAuditoriumsMap.get(per.getPeriodNumber()) == null) {
+			for (ServicePeriod per : periods) {
+				if (periodAuditoriumsMap.get(per.getPeriodNumber()) == null) {
 					Set<ServiceAuditorium> serAuditoriums = new HashSet<>();
 					serAuditoriums.add(per.getAuditorium());
 					periodAuditoriumsMap.put(per.getPeriodNumber(), serAuditoriums);
@@ -188,21 +204,21 @@ public class PersonResource {
 					Set<ServiceAuditorium> auds = periodAuditoriumsMap.get(per.getPeriodNumber());
 					auds.add(per.getAuditorium());
 				}
-			} 
+			}
 			// Remove reserved auditoriums from all auditoriums
-			for(Map.Entry<Integer, Set<ServiceAuditorium>> entry : periodAuditoriumsMap.entrySet()) {
+			for (Map.Entry<Integer, Set<ServiceAuditorium>> entry : periodAuditoriumsMap.entrySet()) {
 				Set<ServiceAuditorium> actualAuditoriums = new HashSet<>(allAuditoriums);
 				Set<ServiceAuditorium> rezulSet = entry.getValue();
 				actualAuditoriums.removeAll(rezulSet);
 				entry.setValue(actualAuditoriums);
 			}
 			List<ServiceAuditoriumPeriod> auditoriumPeriods = new ArrayList<>();
-			for(Map.Entry<Integer, Set<ServiceAuditorium>> entry : periodAuditoriumsMap.entrySet()) {
+			for (Map.Entry<Integer, Set<ServiceAuditorium>> entry : periodAuditoriumsMap.entrySet()) {
 				auditoriumPeriods.add(new ServiceAuditoriumPeriod(entry.getKey(), entry.getValue()));
 			}
 			return auditoriumPeriods;
 		} catch (Exception e) {
-			e.printStackTrace(); 
+			e.printStackTrace();
 			return null;
 		}
 
@@ -253,8 +269,7 @@ public class PersonResource {
 		}
 
 	}
-	
-	
+
 	@DELETE
 	@Path("deleteEvent")
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -270,8 +285,11 @@ public class PersonResource {
 			List<Period> events = dao.readGroupEvents(Integer.toString(period.getGroupID().getGroupID()));
 			Period toDelete = null;
 			for (Period event : events) {
-				//ServiceAuditorium auditorium = new AuditoriumBuilder(event.getAuditorium()).build();
-				if (event.getAuditorium().equals(recievedEvent.getAuditorium()) && event.getPeriodNumber() == recievedEvent.getPeriodNumber()) {
+				// ServiceAuditorium auditorium = new
+				// AuditoriumBuilder(event.getAuditorium()).build();
+				String eventDay = event.getDay() == null ? "" : event.getDay();
+				String recievedDay = recievedEvent.getDay() == null ? "" : recievedEvent.getDay();
+				if (event.getAuditorium().equals(recievedEvent.getAuditorium()) && event.getPeriodNumber() == recievedEvent.getPeriodNumber() && eventDay.equals(recievedDay)) {
 					toDelete = event;
 				}
 			}
@@ -288,6 +306,4 @@ public class PersonResource {
 
 	}
 
-	
-	
 }

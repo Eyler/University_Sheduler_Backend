@@ -27,7 +27,9 @@ public abstract class BaseCrudDAO<T> implements ICrudDao<T> {
 
 	@Override
 	public void update(T obj) {
+		session.getTransaction().begin();
 		session.update(obj);
+		session.getTransaction().commit();
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+encoding//src/WebDriverScheduleParser.java=UTF-8
 encoding//src/controllers/Parser.java=UTF-8
 encoding//src/models/page_objects/StudentsSchedulePage.java=UTF-8
 encoding//src/sheduler/rest/service/resource/PersonResource.java=UTF-8
+encoding/<project>=UTF-8

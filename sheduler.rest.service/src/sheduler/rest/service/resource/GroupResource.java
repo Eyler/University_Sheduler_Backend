@@ -33,7 +33,7 @@ public class GroupResource {
 	// Return the list of todos for applications
 	@GET
 	@Produces({MediaType.APPLICATION_JSON })
-	public List<ServiceGroup> getPersons() {
+	public List<ServiceGroup> getGrpoups() {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		org.hibernate.Session session = sf.openSession();
 		try {
@@ -51,4 +51,30 @@ public class GroupResource {
 
 		}
 	}
+	
+	@GET
+	@Path("/lectures")
+	@Produces({MediaType.APPLICATION_JSON })
+	public List<ServiceGroup> getGrpoupsForLectures() {
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		org.hibernate.Session session = sf.openSession();
+		try {
+			session.beginTransaction();
+			IStudentGroupDao dao = new StudentGroupDAO(session);
+			List<StudentGroup> groups = dao.readAll();
+			List<ServiceGroup> serviceGroups = new ArrayList<ServiceGroup>();
+			for(StudentGroup group : groups) {
+				ServiceGroup serviceGroup = new GroupBuilder(group).build();
+				if(serviceGroup.getGroupName().length() > 7) {
+				serviceGroups.add(serviceGroup);
+				}
+			}
+			return serviceGroups;
+		} finally {
+			session.close();
+
+		}
+	}
+	
+	
 }

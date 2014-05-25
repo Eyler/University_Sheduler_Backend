@@ -1,10 +1,9 @@
+
+
 package models.page_objects;
 
 import models.Auditorium;
 import models.Period;
-import models.YarikAuditorium;
-import models.YarikPeriod;
-
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -15,32 +14,32 @@ import java.util.*;
 /**
  * Created by ykoby_000 on 09.05.2014.
  */
-public class StudentsSchedulePage {
+public class LecturerSchedulePage {
     private WebDriver driver;
-    private String institutesXpathSelector = "//form[@class='rozklad']/select[@name='inst']";
-    private String groupsXpathSelector = "//form[@class='rozklad']/select[@name='group']";
+    private String departmentSelector = "//select[@name='kaf']";
+    private String credentialsSelector = "//select[@name='fnsn']";
 
-    public StudentsSchedulePage(WebDriver driver) {
+    public LecturerSchedulePage(WebDriver driver) {
         this.driver = driver;
     }
 
     public void open() {
-        driver.get("http://lp.edu.ua/node/40");
+        driver.get("http://lp.edu.ua/node/41");
     }
 
-    public List<String> getInstituteNames() {
-        List<WebElement> webElements = driver.findElements(By.xpath(institutesXpathSelector + "/option"));
-        List<String> instituteNames = new LinkedList<String>();
+    public List<String> getDepartmentNames() {
+        List<WebElement> webElements = driver.findElements(By.xpath("//select[@id='dep']" + "/option"));
+        List<String> departmentNames = new LinkedList<String>();
         for (WebElement webElement : webElements) {
             if (!webElement.getText().isEmpty())
-                instituteNames.add(webElement.getText());
+                departmentNames.add(webElement.getText());
         }
-        return instituteNames;
+        return departmentNames;
     }
 
-    public List<String> getStudentGroupNames(String instituteName) {
-        selectElementByLinkText(institutesXpathSelector, instituteName);
-        List<WebElement> webElements = driver.findElements(By.xpath(groupsXpathSelector + "/option"));
+    public List<String> getLecturersCredenitals(String department) {
+        selectElementByLinkText(departmentSelector, department);
+        List<WebElement> webElements = driver.findElements(By.xpath(credentialsSelector + "/option"));
         List<String> studentGroupNames = new LinkedList<String>();
         for (WebElement webElement : webElements) {
             if (!webElement.getText().isEmpty())
@@ -49,14 +48,14 @@ public class StudentsSchedulePage {
         return studentGroupNames;
     }
 
-    public void openScheduleForGroup(String groupName) {
-        selectElementByLinkText(groupsXpathSelector, groupName);
+    public void openScheduleForLecturer(String credentials) {
+        selectElementByLinkText(credentialsSelector, credentials);
     }
 
-    public List<YarikPeriod> getPeriods() {
-        List<WebElement> webElements = driver.findElements(By.xpath("//div[@id='stud']/table/tbody/tr"));
+    public List<Period> getPeriods() {
+        List<WebElement> webElements = driver.findElements(By.xpath("//div[@id='vykl']/div/table/tbody/tr"));
         webElements.remove(0);
-        List<YarikPeriod> periods = new LinkedList<YarikPeriod>();
+        List<Period> periods = new LinkedList<Period>();
         String day = "";
         int number = 0;
         for (WebElement webElement : webElements) {
@@ -83,26 +82,26 @@ public class StudentsSchedulePage {
                                 auditoriumNumber = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[1].trim();
                             }
-                            periods.add(new YarikPeriod(day, number, discipline, new YarikAuditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
+                            periods.add(new Period(day, number, discipline, new Auditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
                         }
                     } else if (webElement.findElements(By.xpath("td[3]/table/tbody/tr")).size() == 1) {
-                        String tmp = webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']")).getText();
+                        String tmp = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td")).getText();
                         if (!tmp.isEmpty()) {
-                            String discipline = webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']/div/b")).getText();
-                            String lecturer = webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']/div/i")).getText();
+                            String discipline = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div/b")).getText();
+                            String lecturer = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div/i")).getText();
                             String auditoriumLocation = "";
                             String auditoriumNumber = "";
-                            if (webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']/div"))
+                            if (webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div"))
                                     .getText().contains("каф")) {
                                 auditoriumLocation = "каф.";
                                 auditoriumNumber = "unknown";
                             } else {
-                                auditoriumLocation = webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']/div"))
+                                auditoriumLocation = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[0].trim();
-                                auditoriumNumber = webElement.findElement(By.xpath("td[3]/table/tbody/tr/td[@class='color']/div"))
+                                auditoriumNumber = webElement.findElement(By.xpath("td[3]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[1].trim();
                             }
-                            periods.add(new YarikPeriod(day, number, discipline, new YarikAuditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
+                            periods.add(new Period(day, number, discipline, new Auditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
                         }
                     }
                 } else if (webElement.findElements(By.xpath("td")).size() == 2) {
@@ -124,32 +123,32 @@ public class StudentsSchedulePage {
                                 auditoriumNumber = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[1].trim();
                             }
-                            periods.add(new YarikPeriod(day, number, discipline, new YarikAuditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
+                            periods.add(new Period(day, number, discipline, new Auditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
                         }
                     } else if (webElement.findElements(By.xpath("td[2]/table/tbody/tr")).size() == 1) {
-                        String tmp = webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']")).getText();
+                        String tmp = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td")).getText();
                         if (!tmp.isEmpty()) {
-                            String discipline = webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']/div/b")).getText();
-                            String lecturer = webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']/div/i")).getText();
+                            String discipline = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div/b")).getText();
+                            String lecturer = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div/i")).getText();
                             String auditoriumLocation = "";
                             String auditoriumNumber = "";
-                            if (webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']/div"))
+                            if (webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div"))
                                     .getText().contains("каф")) {
                                 auditoriumLocation = "каф.";
                                 auditoriumNumber = "unknown";
                             } else {
-                                auditoriumLocation = webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']/div"))
+                                auditoriumLocation = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[0].trim();
-                                auditoriumNumber = webElement.findElement(By.xpath("td[2]/table/tbody/tr/td[@class='color']/div"))
+                                auditoriumNumber = webElement.findElement(By.xpath("td[2]/table/tbody/tr[@class='color']/td/div"))
                                         .getText().replace(discipline, "").replace(lecturer, "").split(",")[0].split("н.к.")[1].trim();
                             }
-                            periods.add(new YarikPeriod(day, number, discipline, new YarikAuditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
+                            periods.add(new Period(day, number, discipline, new Auditorium(auditoriumLocation, auditoriumNumber, true), lecturer));
                         }
                     }
                 }
             } catch (org.openqa.selenium.NoSuchElementException e) {
                 break;
-            } catch (ArrayIndexOutOfBoundsException e){
+            } catch (ArrayIndexOutOfBoundsException e) {
                 break;
             }
         }
