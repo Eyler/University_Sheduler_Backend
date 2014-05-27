@@ -1,7 +1,9 @@
 package sheduler.rest.service.resource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -11,12 +13,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 
+
+
+
+import models.page_objects.Lecturer;
+
 import org.hibernate.SessionFactory;
 
 import sheduler.model.HibernateUtil;
 import sheduler.model.bean.StudentGroup;
 import sheduler.model.dao.StudentGroupDAO;
 import sheduler.model.interfaces.IStudentGroupDao;
+import sheduler.model.service.bean.ServiceLecturer;
 import sheduler.model.service.bean.ServiceGroup;
 import sheduler.model.service.bean.builder.GroupBuilder;
 
@@ -55,21 +63,21 @@ public class GroupResource {
 	@GET
 	@Path("/lectures")
 	@Produces({MediaType.APPLICATION_JSON })
-	public List<ServiceGroup> getGrpoupsForLectures() {
+	public Set<ServiceLecturer> getGrpoupsForLectures() {
 		SessionFactory sf = HibernateUtil.getSessionFactory();
 		org.hibernate.Session session = sf.openSession();
 		try {
 			session.beginTransaction();
 			IStudentGroupDao dao = new StudentGroupDAO(session);
 			List<StudentGroup> groups = dao.readAll();
-			List<ServiceGroup> serviceGroups = new ArrayList<ServiceGroup>();
+			Set<ServiceLecturer> lectures = new HashSet<ServiceLecturer>();
 			for(StudentGroup group : groups) {
 				ServiceGroup serviceGroup = new GroupBuilder(group).build();
 				if(serviceGroup.getGroupName().length() > 7) {
-				serviceGroups.add(serviceGroup);
+					lectures.add(new ServiceLecturer(serviceGroup.getGroupName()));
 				}
 			}
-			return serviceGroups;
+			return lectures;
 		} finally {
 			session.close();
 
